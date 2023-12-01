@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module aoc23.Prelude
 
+open System.IO
 open System.Text.RegularExpressions
 
 let tryRegex pattern input =
@@ -51,6 +52,17 @@ module TryParser =
     let (|Single|_|) = parseSingle
     let (|Double|_|) = parseDouble
 
+let formatRun part1 part2 = $"Part 1: {part1}, Part 2: {part2}"
+
+let runReadAllLines part1 part2 fileName =
+    let lines = File.ReadAllLines(fileName)
+    formatRun (lines |> part1) (lines |> part2)
+
+let runReadAllText part1 part2 fileName =
+    let lines = File.ReadAllText(fileName)
+    formatRun (lines |> part1) (lines |> part2)
+
+let skipPart _ = "skipped"
 
 module StringEx =
     let private asOption =

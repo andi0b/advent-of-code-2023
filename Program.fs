@@ -1,10 +1,11 @@
 ﻿open System.Threading.Tasks
 open aoc23
 
-let skip = (fun () -> "skipped")
+let skip _ = "skipped"
 
-let days = [ Day01.run ]
-
+let days =
+    [ Day01.run ]
+    |> List.mapi (fun i run -> fun () -> run $"inputs/day%02u{i + 1}.txt")
 
 let runAll () =
     let tasks =
@@ -33,21 +34,24 @@ let Main args =
 
         match days |> List.tryItem (day - 1) with
         | Some implementation ->
-            printf $"Day {day} {implementation ()}"
+            printfn $"Running day {day}:"
+            printfn $"{implementation ()}"
             0
 
         | None ->
-            printf $"Could not find an implementation for day {day}"
+            printfn $"Could not find an implementation for day {day}"
             1
 
     | [| "latest" |] when days.Length > 0 ->
-        printf $"Day {days.Length} {(days |> List.last) ()}"
+        printfn $"Running latest (day {days.Length}):"
+        printf $"{(days |> List.last) ()}"
         0
 
     | [||] ->
+        printfn $"Running all days (1 - {days.Length})"
         runAll ()
         0
 
     | _ ->
-        printf "Expect either a number no parameters"
+        printf "Expect either a number, 'latest', no parameters"
         1

@@ -1,16 +1,14 @@
 ﻿module aoc23.Day01
 
 open System
-open System.IO
 open Swensen.Unquote
 open Xunit
-
 
 module CalibrationValue =
 
     let fromDigits (line: string) =
         let chars = line.ToCharArray()
-        let firstDigit = chars |> Seq.find Char.IsDigit
+        let firstDigit = chars |> Array.find Char.IsDigit
         let lastDigit = chars |> Array.findBack Char.IsDigit
         $"{firstDigit}{lastDigit}" |> int
 
@@ -50,26 +48,16 @@ module CalibrationValue =
             |> indexOfFunc searchTerm
             |> Option.map (fun index -> {| index = index; value = value |})
 
-        (words |> List.choose findValueWithIndex |> minOrMaxBy (fun x -> x.index))
-            .value
+        (words |> List.choose findValueWithIndex |> minOrMaxBy _.index).value
 
     let fromWordsAndDigits (line: string) =
         let first = line |> findValue First
         let last = line |> findValue Last
         first * 10 + last
 
-
-let part1 lines =
-    lines |> Array.map CalibrationValue.fromDigits |> Array.sum
-
-let part2 lines =
-    lines |> Array.map CalibrationValue.fromWordsAndDigits |> Array.sum
-
-
-let run () =
-    let lines = File.ReadAllLines("inputs/day01.txt")
-    $"Part 1: {part1 lines}, Part 2: {part2 lines}"
-
+let part1 = Seq.map CalibrationValue.fromDigits >> Seq.sum
+let part2 = Seq.map CalibrationValue.fromWordsAndDigits >> Seq.sum
+let run = runReadAllLines part1 part2
 
 module tests =
     let example1 = [| "1abc2"; "pqr3stu8vwx"; "a1b2c3d4e5f"; "treb7uchet" |]
