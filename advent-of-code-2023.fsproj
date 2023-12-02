@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FSharp.Stats" Version="0.5.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
         <PackageReference Include="Unquote" Version="6.1.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
@@ -25,6 +26,7 @@
         </Content>
         <Compile Include="Prelude.fs" />
         <Compile Include="Day01.fs" />
+        <Compile Include="Day02.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
