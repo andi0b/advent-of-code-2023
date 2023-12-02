@@ -2,6 +2,7 @@
 
 open FSharp.Stats
 open FSharp.Text.RegexProvider
+open FSharp.Text.RegexExtensions
 open Xunit
 open Swensen.Unquote
 
@@ -10,59 +11,52 @@ type Game = { id: int; rounds: CubeState list }
 
 module Parser =
     type ColorRegex = Regex< @"(?<count>\d*) (?<color>[a-z]*)" >
+    type GameRegex = Regex< @"Game (?<gameId>\d*): (?<rounds>.*)" >
 
     let parseCubeState str =
         let matches = ColorRegex().TypedMatches(str)
 
         let getCount color =
-            match matches |> Seq.tryFind (fun m -> m.color.Value = color) with
-            | Some match' -> match'.count.Value |> int
-            | None -> 0
+            matches
+            |> Seq.tryFind (fun m -> m.color.Value = color)
+            |> Option.map _.count.AsInt
+            |> Option.defaultValue 0
 
         vector [| getCount "red"; getCount "green"; getCount "blue" |]
-
 
     let parseRounds (str: string) =
         str.Split(';') |> Seq.map parseCubeState |> Seq.toList
 
-    type GameRegex = Regex< @"Game (?<gameId>\d*): (?<rounds>.*)" >
-
     let parseGame str =
-        let m = GameRegex().TypedMatch(str)
+        let match' = GameRegex().TypedMatch(str)
 
-        { id = m.gameId.Value |> int
-          rounds = parseRounds m.rounds.Value }
+        { id = match'.gameId.AsInt
+          rounds = parseRounds match'.rounds.Value }
 
 module Game =
     let cubeCountNeeded game = game.rounds |> Seq.reduce Vector.cptMax
 
-    let canBePlayedWithCubeCount available game =
-        let needed = cubeCountNeeded game
+    let canBePlayedWithCubeCount availableCubeCount game =
+        (availableCubeCount - cubeCountNeeded game)
+        |> Vector.forall (fun diff -> diff >= 0)
 
-        Seq.map2 (>=) (available |> Vector.toArray) (needed |> Vector.toArray)
-        |> Seq.reduce (&&)
-
-    let calcCubePower = Vector.toArray >> Array.reduce (*)
+module Cube =
+    let calcCubePower = Vector.prod
 
 let part1 lines =
     let games = lines |> Seq.map Parser.parseGame
-
     let availableCubes = vector [| 12; 13; 14 |]
 
     let possibleGames =
-        games
-        |> Seq.filter (fun game -> game |> Game.canBePlayedWithCubeCount availableCubes)
+        games |> Seq.filter (Game.canBePlayedWithCubeCount availableCubes)
 
     possibleGames |> Seq.sumBy _.id
 
 
 let part2 lines =
     let games = lines |> Seq.map Parser.parseGame
-
-    let gamePowers = games |> Seq.map (Game.cubeCountNeeded >> Game.calcCubePower)
-
+    let gamePowers = games |> Seq.map (Game.cubeCountNeeded >> Cube.calcCubePower)
     gamePowers |> Seq.sum
-
 
 let run = runReadAllLines part1 part2
 
@@ -74,9 +68,11 @@ module Tests =
             "Game 31: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red"
             |> Parser.parseGame
 
-        parsed
-        =! { id = 31
-             rounds = [ vector [| 20; 8; 6 |]; vector [| 4; 13; 5 |]; vector [| 1; 5; 0 |] ] }
+        let expected =
+            { id = 31
+              rounds = [ vector [| 20; 8; 6 |]; vector [| 4; 13; 5 |]; vector [| 1; 5; 0 |] ] }
+
+        parsed =! expected
 
     [<Fact>]
     let ``calculate needed cube count`` () =
