@@ -24,8 +24,8 @@ module Parser =
 
         vector [| getCount "red"; getCount "green"; getCount "blue" |]
 
-    let parseRounds (str: string) =
-        str.Split(';') |> Seq.map parseCubeState |> Seq.toList
+    let parseRounds str =
+        str |> StringEx.splitC ';' |> Seq.map parseCubeState |> Seq.toList
 
     let parseGame str =
         let match' = GameRegex().TypedMatch(str)

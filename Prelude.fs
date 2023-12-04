@@ -70,6 +70,13 @@ module StringEx =
         | x when x < 0 -> None
         | x -> Some x
 
-    let indexOf (search: string) (input: string) = input.IndexOf(search) |> asOption
+    let indexOf (search: string) (source: string) = source.IndexOf(search) |> asOption
+    let lastIndexOf (search: string) (source: string) = source.LastIndexOf(search) |> asOption
 
-    let lastIndexOf (search: string) (input: string) = input.LastIndexOf(search) |> asOption
+    let splitS (separator: string) (source: string) = source.Split(separator)
+
+    let splitSs (separator: string array) (source: string) =
+        source.Split(separator, System.StringSplitOptions.None)
+
+    let splitC (separator: char) (source: string) = source.Split(separator)
+    let splitCs (separator: char array) (source: string) = source.Split(separator)
