@@ -13,6 +13,9 @@ module Coordinate =
         let s = seq { -1 .. 1 }
         Seq.allPairs s s |> Seq.filter ((<>) (0, 0)) |> Seq.toList
 
+    let adjacent (x, y) =
+        allDirections |> Seq.map (fun dir -> add dir (x, y))
+
 let tryGet (x, y) (lines: string array) =
     lines |> Array.tryItem y |> Option.bind (fun line -> line |> Seq.tryItem x)
 
@@ -41,10 +44,8 @@ let part1 lines =
         |> Seq.filter (fun group ->
             group
             |> Seq.exists (fun (x, _) ->
-                let adjacent =
-                    Coordinate.allDirections |> Seq.map (fun dir -> Coordinate.add dir (x, y))
-
-                let adjacentChars = adjacent |> Seq.choose (fun adj -> tryGet adj lines)
+                let adjacentChars =
+                    Coordinate.adjacent (x, y) |> Seq.choose (fun adj -> tryGet adj lines)
 
                 adjacentChars
                 |> Seq.exists (fun char -> char <> '.' && not <| System.Char.IsDigit(char)))))
@@ -53,7 +54,45 @@ let part1 lines =
     |> Seq.sum
 
 
-let run = runReadAllLines part1 skipPart
+let part2 lines =
+
+    let anchorCoordinates =
+        lines
+        |> Seq.mapi (fun y lines ->
+            lines
+            |> Seq.indexed
+            |> Seq.filter (snd >> ((=) '*'))
+            |> Seq.map (fun i -> (fst i, y)))
+        |> Seq.collect id
+        |> Seq.toArray
+
+    let parts =
+        lines
+        |> Seq.mapi (fun y line ->
+            line
+            |> IndexedDigit.fromString
+            |> Seq.map (fun indexedDigit ->
+                (indexedDigit |> IndexedDigit.getValue, indexedDigit |> Seq.map (fun (x, _) -> (x, y)))))
+        |> Seq.collect id
+        |> Seq.toArray
+
+
+    let anchorAdjacentParts =
+        anchorCoordinates
+        |> Seq.map Coordinate.adjacent
+        |> Seq.map (fun adjacentCoordinates ->
+            parts
+            |> Seq.filter (fun (_, points) ->
+                points |> Seq.exists (fun point -> adjacentCoordinates |> Seq.contains point))
+            |> Seq.map fst
+            |> Seq.toArray)
+        
+    anchorAdjacentParts
+    |>Seq.filter (fun parts -> parts.Length = 2)
+    |> Seq.map (Seq.reduce (*))
+    |> Seq.sum
+
+let run = runReadAllLines part1 part2
 
 module Tests =
     let example =
@@ -70,3 +109,6 @@ module Tests =
 
     [<Fact>]
     let ``Test Part 1`` () = part1 example =! 4361
+    
+    [<Fact>]
+    let ``Test Part 2`` () = part2 example =! 467835
