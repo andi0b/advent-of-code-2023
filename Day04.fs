@@ -1,6 +1,5 @@
 ﻿module aoc23.Day04
 
-open System.Linq
 open FSharp.Text.RegexProvider
 open FSharp.Text.RegexExtensions
 open Xunit
