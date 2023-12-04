@@ -19,23 +19,6 @@ module Coordinate =
 let tryGet (x, y) (lines: string array) =
     lines |> Array.tryItem y |> Option.bind (fun line -> line |> Seq.tryItem x)
 
-module IndexedDigit =
-
-    let fromString (str: string) =
-        let folder item =
-            function
-            | [] -> [ [ item ] ]
-            | (pos, _) :: _ as ys :: xs when pos - 1 = fst item -> (item :: ys) :: xs
-            | list -> [ item ] :: list
-
-        let indexedChars = str |> Seq.indexed |> Seq.filter (snd >> System.Char.IsDigit)
-
-        Seq.foldBack folder indexedChars []
-
-    let getValue digits =
-        digits |> Seq.map snd |> Seq.toArray |> System.String |> int
-
-
 type Part =
     { Number: int
       Points: (int * int) list }
