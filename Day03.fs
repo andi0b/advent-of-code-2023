@@ -14,14 +14,13 @@ module Coordinate =
         Seq.allPairs s s |> Seq.filter ((<>) (0, 0)) |> Seq.toList
 
     let adjacent (x, y) =
-        allDirections |> Seq.map (fun dir -> add dir (x, y))
+        allDirections |> Seq.map (fun dir -> add dir (x, y)) |> Set.ofSeq
 
 let tryGet (x, y) (lines: string array) =
     lines |> Array.tryItem y |> Option.bind (fun line -> line |> Seq.tryItem x)
 
 type Part =
-    { Number: int
-      Points: (int * int) list }
+    { Number: int; Points: (int * int) Set }
 
 module Part =
 
@@ -40,7 +39,7 @@ module Part =
         Seq.foldBack folder indexedDigits []
         |> Seq.map (fun digits ->
             { Number = digits |> Seq.map snd |> Seq.toArray |> System.String |> int
-              Points = digits |> Seq.map fst |> Seq.map (fun x -> (x, lineId)) |> Seq.toList })
+              Points = digits |> Seq.map fst |> Seq.map (fun x -> (x, lineId)) |> Set.ofSeq })
 
     let fromLines lines =
         lines |> Seq.mapi fromLine |> Seq.collect id
@@ -82,10 +81,7 @@ let part2 lines =
         |> Seq.map Coordinate.adjacent
         |> Seq.map (fun adjacentCoordinates ->
             parts
-            |> Seq.filter (fun part ->
-                part.Points
-                |> Seq.exists (fun point -> adjacentCoordinates |> Seq.contains point))
-            |> Seq.toArray)
+            |> Array.filter (fun part -> Set.intersect part.Points adjacentCoordinates |> Set.count > 0))
 
     anchorAdjacentParts
     |> Seq.filter (fun parts -> parts.Length = 2)
