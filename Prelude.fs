@@ -52,7 +52,7 @@ module TryParser =
     let (|Single|_|) = parseSingle
     let (|Double|_|) = parseDouble
 
-let formatRun part1 part2 = $"Part 1: {part1}, Part 2: {part2}"
+let formatRun part1 part2 = $"Part 1: {part1}  Part 2: {part2}"
 
 let runReadAllLines part1 part2 fileName =
     let lines = File.ReadAllLines(fileName)
