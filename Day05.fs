@@ -3,9 +3,7 @@
 open System.Text.RegularExpressions
 
 type Range = Range of int64 * int64
-
 type CategoryMapping = CategoryMapping of int64 * int64 * int64
-
 type CategoryMap = CategoryMap of CategoryMapping list
 
 type Almanac =
@@ -66,9 +64,7 @@ module Range =
 
 module CategoryMapping =
     let inRange x (CategoryMapping(_, src, len)) = x >= src && x < (src + len)
-
     let map x (CategoryMapping(dest, src, _)) = (x - src) + dest
-
     let toRange (CategoryMapping(_, src, len)) = Range(src, len)
 
 module CategoryMap =
@@ -90,35 +86,31 @@ let part2 line =
     let { Maps = maps; Seeds = seeds } = line |> Parser.parseAlmanac
 
     let seedRanges =
-        seeds
-        |> List.chunkBySize 2
-        |> List.choose (function
-            | [ src; len ] -> Some(Range(src, len))
-            | _ -> None)
+        seeds |> List.chunkBySize 2 |> List.map (fun l -> Range(l[0], l[1]))
 
-    let rec folder seedRanges =
+    let mapRange mapping (Range(src, len)) =
+        Range(mapping |> CategoryMapping.map src, len)
+
+    let rec folder mapped unmapped =
         function
         | CategoryMap(mapping :: remainingMappings) ->
+            // split unmapped ranges into 1-3 sub-range options, l2s are the ones matching the mapping
             let l1, l2, l3 =
-                seedRanges
-                |> List.map (fun seedRange ->
-                    let r1, r2, r3 = seedRange |> Range.splitWith (mapping |> CategoryMapping.toRange)
-
-                    let r2Mapped =
-                        r2
-                        |> Option.map (fun (Range(src, len)) -> Range(mapping |> CategoryMapping.map src, len))
-
-                    (r1, r2Mapped, r3))
+                unmapped
+                |> List.map (Range.splitWith (mapping |> CategoryMapping.toRange))
                 |> List.unzip3
+                |> TupleEx.map3 (List.choose id)
 
-            let mapped = l2 |> List.choose id
-            let unmapped = (l1 |> List.choose id) @ (l3 |> List.choose id)
+            let l2mapped = l2 |> List.map (mapRange mapping)
 
-            mapped @ (folder unmapped (CategoryMap remainingMappings))
-        | CategoryMap [] -> seedRanges
+            let mapped' = l2mapped @ mapped
+            let unmapped' = l1 @ l3
+            folder mapped' unmapped' (CategoryMap remainingMappings)
+
+        | CategoryMap [] -> mapped @ unmapped
 
     maps
-    |> Seq.fold folder seedRanges
+    |> Seq.fold (folder []) seedRanges
     |> Seq.map (fun (Range(src, _)) -> src)
     |> Seq.min
 
