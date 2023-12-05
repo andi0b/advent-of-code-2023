@@ -80,3 +80,9 @@ module StringEx =
 
     let splitC (separator: char) (source: string) = source.Split(separator)
     let splitCs (separator: char array) (source: string) = source.Split(separator)
+module TupleEx =
+    let map2 f (a, b) = (f a, f b)
+    let map3 f (a, b, c) = (f a, f b, f c)
+    let mapFst f (a, b) = (f a, b)
+    let mapSnd f (a, b) = (a, f b)
+    
