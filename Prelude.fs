@@ -80,9 +80,25 @@ module StringEx =
 
     let splitC (separator: char) (source: string) = source.Split(separator)
     let splitCs (separator: char array) (source: string) = source.Split(separator)
+
+    let replace (search: string) (replace: string) (source: string) = source.Replace(search, replace)
+
 module TupleEx =
-    let map2 f (a, b) = (f a, f b)
+    let map f (a, b) = (f a, f b)
     let map3 f (a, b, c) = (f a, f b, f c)
     let mapFst f (a, b) = (f a, b)
     let mapSnd f (a, b) = (a, f b)
+    
+    let toList (a, b) = [ a; b ]
+    let toList3 (a, b, c) = [ a; b; c ]
+    let fromList (l: 'a list) =
+        match l with
+        | [ a; b ] -> (a, b)
+        | _ -> failwith "TupleEx.fromList: list must have exactly 2 elements"
+    let fromList3 (l: 'a list) = 
+        match l with
+        | [ a; b; c ] -> (a, b, c)
+        | _ -> failwith "TupleEx.fromList3: list must have exactly 3 elements"
+        
+    
     
