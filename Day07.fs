@@ -35,9 +35,9 @@ module Hand =
             | 4 :: _ -> 5 // Four of a kind
             | [ 3; 2 ] -> 4 // Full house
             | 3 :: _ -> 3 // Three of a kind
-            | 2 :: 2 :: _ -> 2 // Two pairs
+            | [ 2; 2; 1 ] -> 2 // Two pairs
             | 2 :: _ -> 1 // One pair
-            | [ 1; 1; 1; 1; 1 ] -> 0 // High card
+            | 1 :: _ -> 0 // High card
             | _ -> failwith "impossible combination"
 
     /// calculate a comparable score by taking the first-most count and multiply by 10, then adding the second most count.
