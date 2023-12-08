@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module aoc23.Prelude
 
+open System.Diagnostics
 open System.IO
 open System.Text.RegularExpressions
 
@@ -52,15 +53,23 @@ module TryParser =
     let (|Single|_|) = parseSingle
     let (|Double|_|) = parseDouble
 
-let formatRun part1 part2 = $"Part 1: {part1}  Part 2: {part2}"
+let formatRun part1 part2 =
+
+    let runWithSw runnable =
+        let sw = Stopwatch.StartNew()
+        let result = runnable ()
+        sw.Stop()
+        $"{result} ({sw.ElapsedMilliseconds}ms)"
+
+    $"Part 1: {runWithSw part1}  Part 2: {runWithSw part2}"
 
 let runReadAllLines part1 part2 fileName =
     let lines = File.ReadAllLines(fileName)
-    formatRun (lines |> part1) (lines |> part2)
+    formatRun (fun () -> lines |> part1) (fun () -> lines |> part2)
 
 let runReadAllText part1 part2 fileName =
     let lines = File.ReadAllText(fileName)
-    formatRun (lines |> part1) (lines |> part2)
+    formatRun (fun () -> lines |> part1) (fun () -> lines |> part2)
 
 let skipPart _ = "skipped"
 
@@ -88,17 +97,18 @@ module TupleEx =
     let map3 f (a, b, c) = (f a, f b, f c)
     let mapFst f (a, b) = (f a, b)
     let mapSnd f (a, b) = (a, f b)
-    
+
+    let swap (a, b) = (b, a)
+
     let toList (a, b) = [ a; b ]
     let toList3 (a, b, c) = [ a; b; c ]
+
     let fromList (l: 'a list) =
         match l with
         | [ a; b ] -> (a, b)
         | _ -> failwith "TupleEx.fromList: list must have exactly 2 elements"
-    let fromList3 (l: 'a list) = 
+
+    let fromList3 (l: 'a list) =
         match l with
         | [ a; b; c ] -> (a, b, c)
         | _ -> failwith "TupleEx.fromList3: list must have exactly 3 elements"
-        
-    
-    
