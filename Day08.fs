@@ -102,12 +102,13 @@ let part1_fast text =
 
 let part2 text =
     let solver = Solver text
-    let aNodes = solver.aNodes
 
-    let zNodesAfter =
-        aNodes |> Array.map (solver.indexOf BreakCondition_xxZ) |> Array.map int64
+    let zNodesIterations =
+        solver.aNodes |> Array.map (solver.indexOf BreakCondition_xxZ)
 
-    MathNet.Numerics.Euclid.LeastCommonMultiple(zNodesAfter)
+    zNodesIterations
+    |> Array.map int64
+    |> MathNet.Numerics.Euclid.LeastCommonMultiple
 
 let run = runReadAllText part1_fast part2
 
