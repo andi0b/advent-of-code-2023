@@ -105,6 +105,9 @@ module TupleEx =
     let toList (a, b) = [ a; b ]
     let toList3 (a, b, c) = [ a; b; c ]
 
+    let apply f (a, b) = f a b
+    let apply3 f (a, b, c) = f a b c
+
     let fromList (l: 'a list) =
         match l with
         | [ a; b ] -> (a, b)
