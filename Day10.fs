@@ -162,15 +162,25 @@ let part2 lines =
         |> Seq.iteri (fun x char ->
             let pos = vector [| x; y |]
 
+            let char2 =
+                match char with
+                | 'J' -> '╯'
+                | 'L' -> '╰'
+                | '7' -> '╮'
+                | 'F' -> '╭'
+                | '-' -> '─'
+                | '|' -> '│'
+                | c -> c
+
             Spectre.Console.AnsiConsole.Markup(
                 if (leftPos |> Set.contains pos) then
-                    $"[red]{char}[/]"
+                    $"[red]{char2}[/]"
                 elif (rightPos |> Set.contains pos) then
-                    $"[lime]{char}[/]"
+                    $"[lime]{char2}[/]"
                 elif (loopPositions |> Set.contains pos) then
-                    $"[yellow on blue]{char}[/]"
+                    $"[yellow on blue]{char2}[/]"
                 else
-                    $"[black on pink1]{char}[/]"
+                    $"[black on pink1]{char2}[/]"
             ))
 
         printfn "")
@@ -182,7 +192,7 @@ let part2 lines =
             |> Set.exists (fun vec -> (Vector.get vec 0) = 0.0 || (Vector.get vec 1) = 0.0)
             |> not)
         |> Seq.exactlyOne
-        
+
     inner.Count
 
 let run = runReadAllLines part1 part2
