@@ -129,11 +129,10 @@ let part2 lines =
 
         let newTiles =
             newLocations
-            |> Seq.filter (fun loc ->
-                (lines |> Grid.tryCharAt loc).IsSome
-                && (loopPositions |> Set.contains loc |> not)
-                && (allTiles |> Set.contains loc |> not))
             |> Set.ofSeq
+            |> Set.filter (fun loc -> (lines |> Grid.tryCharAt loc).IsSome)
+            |> (fun x -> Set.difference x loopPositions)
+            |> (fun x -> Set.difference x allTiles)
 
         if (newTiles.Count = 0) then
             allTiles
@@ -156,6 +155,7 @@ let part2 lines =
         |> List.unzip
         |> TupleEx.map (fun list -> expand Set.empty list)
 
+    (*
     lines
     |> Array.iteri (fun y line ->
         line
@@ -184,6 +184,8 @@ let part2 lines =
             ))
 
         printfn "")
+
+    *)
 
     let inner =
         [ leftPos; rightPos ]

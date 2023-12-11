@@ -92,6 +92,8 @@ module StringEx =
 
     let replace (search: string) (replace: string) (source: string) = source.Replace(search, replace)
 
+    let length (source: string) = source.Length
+
 module TupleEx =
     let map f (a, b) = (f a, f b)
     let map3 f (a, b, c) = (f a, f b, f c)
