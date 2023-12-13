@@ -6,7 +6,8 @@ type mm
 [<Measure>]
 type ms
 
-type Game = { Time: int64<ms>; Distance: int64<mm> }
+type Game =
+    { Time: int64<ms>; Distance: int64<mm> }
 
 module Parser =
     open FSharp.Text.RegexProvider
@@ -54,9 +55,9 @@ module Game =
         |> Seq.length
 
     // Solved game equation d=(t-b)*b (distance=(time-buttonpresses)*buttonpresses with sympy to this:
-    // [t/2 - sqrt(-4*d + t**2)/2, t/2 + sqrt(-4*d + t**2)/2]        
+    // [t/2 - sqrt(-4*d + t**2)/2, t/2 + sqrt(-4*d + t**2)/2]
     let algorithmicRecordBeatingGameCount { Distance = distance; Time = time } =
-        
+
         let solve (d: float) (t: float) =
             let min, max =
                 ((-), (+))
@@ -81,7 +82,9 @@ module Tests =
     open Xunit
     open Swensen.Unquote
 
-    let example = [| "Time:      7  15   30"; "Distance:  9  40  200" |]
+    let example =
+        [| "Time:      7  15   30" //
+           "Distance:  9  40  200" |]
 
     [<Fact>]
     let ``Parse example`` () =

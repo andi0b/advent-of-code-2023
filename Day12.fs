@@ -32,7 +32,6 @@ let (|Operational|Damaged|Unknown|) =
     | c -> failwith $"Unknown state '{c}'"
 
 module ConditionRecord =
-
     let unfold record =
         let repeat times separator list =
             [ for i in 1..times do
@@ -61,12 +60,9 @@ module ConditionRecord =
         let knownOperational = (counts |> Map.tryFind '#' |> Option.defaultValue 0)
         let knownDamaged = (counts |> Map.tryFind '.' |> Option.defaultValue 0)
 
-        let unknownOperational = totalOperational - knownOperational
-        let unknownDamaged = totalDamaged - knownDamaged
-
         { knownOperational = knownOperational
-          unknownOperational = unknownOperational
-          unknownDamaged = unknownDamaged }
+          unknownOperational = totalOperational - knownOperational
+          unknownDamaged = totalDamaged - knownDamaged }
 
     let nextGroupSolutionOffsets record =
         let rec allCombinations offset stats group =
@@ -112,42 +108,34 @@ module ConditionRecord =
 
         match (record, stats record) with
         | _, stats when stats.isSolved -> [ 0 ]
-        | { groups = group :: _; states = states }, stats when stats.isSolvable ->
-            allCombinations 0 stats group (0, states)
+        | { groups = nexGroup :: _
+            states = states },
+          stats when stats.isSolvable -> allCombinations 0 stats nexGroup (0, states)
         | _ -> []
 
     let allSolutionsCount record =
+        ([ (1L, record) ], [ 1 .. record.groups.Length ])
+        ||> List.fold (fun records _rank ->
+            let expand (multiplier, record) =
+                record
+                |> nextGroupSolutionOffsets
+                |> List.map (fun offsetBy ->
+                    {| multiplier = multiplier
+                       record = record
+                       offsetBy = offsetBy
+                       destinationOffset = record.offset + offsetBy |})
 
-        let rec solve records =
-            function
-            | [] -> records |> List.sumBy fst
-            | _ :: remainingGroups ->
+            let recordTails =
+                records
+                |> List.collect expand
+                |> List.groupBy _.destinationOffset
+                |> List.map (fun (_, x) ->
+                    let recordTail = x.Head.record |> offsetTail x.Head.offsetBy
+                    let multiplier = x |> List.sumBy (fun i -> i.multiplier)
+                    multiplier, recordTail)
 
-                let results =
-                    records
-                    |> List.collect (fun (multiplier, record) ->
-                        record
-                        |> nextGroupSolutionOffsets
-                        |> List.map (fun offsetBy ->
-                            {| multiplier = multiplier
-                               record = record
-                               offsetBy = offsetBy
-                               destinationOffset = record.offset + offsetBy |}))
-
-                let recordTails =
-                    results
-                    |> List.groupBy _.destinationOffset
-                    |> List.map (fun (_, x) ->
-                        let recordTail = x.Head.record |> offsetTail x.Head.offsetBy
-
-                        let multiplier = (x |> List.sumBy (fun i -> i.multiplier))
-
-                        (multiplier, recordTail))
-
-                solve recordTails remainingGroups
-
-        solve [ (1L, record) ] [ 0 .. record.groups.Length ]
-
+            recordTails)
+        |> List.sumBy fst
 
 let part1 lines =
     lines
@@ -197,7 +185,7 @@ module Tests =
     let ``next group solution count`` () =
         let record = "???.### 1,3" |> Parser.line
         let solutionOffsets = record |> ConditionRecord.nextGroupSolutionOffsets
-        solutionOffsets =! [ 1; 2; 3 ]
+        solutionOffsets =! [ 2; 3; 4 ]
 
     module stats =
 
