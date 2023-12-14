@@ -13,25 +13,23 @@ module MirrorPoint =
         | Row r -> r * 100
 
 type Grid(input) =
-    let matrix =
-        let lines = input |> StringEx.splitSs [| "\r\n"; "\n" |]
-        let rows = lines.Length
-        let cols = lines[0].Length
-        Matrix.init rows cols (fun r c -> if lines[r][c] = '#' then 1.0 else 0.0)
+    let rows, cols =
+        let matrix =
+            let lines = input |> StringEx.splitSs [| "\r\n"; "\n" |]
+            let rows = lines.Length
+            let cols = lines[0].Length
+            Matrix.init rows cols (fun r c -> if lines[r][c] = '#' then 1.0 else 0.0)
 
-    let rows =
-        [| 0 .. matrix.NumRows - 1 |]
-        |> Array.map (Matrix.getRow matrix >> RowVector.transpose)
-
-    let cols = [| 0 .. matrix.NumCols - 1 |] |> Array.map (Matrix.getCol matrix)
+        Array.init (matrix.NumRows - 1) (Matrix.getRow matrix >> RowVector.transpose),
+        Array.init (matrix.NumCols - 1) (Matrix.getCol matrix)
 
     let findMirrorPoint comparer =
         seq {
-            for r in 1 .. matrix.NumRows - 1 do
+            for r in 1 .. rows.Length - 1 do
                 if comparer rows r then
                     yield Row r
 
-            for c in 1 .. matrix.NumCols - 1 do
+            for c in 1 .. cols.Length - 1 do
                 if comparer cols c then
                     yield Col c
         }
@@ -59,9 +57,7 @@ type Grid(input) =
         parts |> Array.map Grid
 
 let solve mapper input =
-    let grids = Grid.ParseMany input
-
-    grids |> Seq.map (fun g -> g |> mapper |> MirrorPoint.value) |> Seq.sum
+    input |> Grid.ParseMany |> Seq.map (mapper >> MirrorPoint.value) |> Seq.sum
 
 let part1 = solve _.MirrorPoint
 let part2 = solve _.UnsmugedMirrorPoint

@@ -13,6 +13,7 @@
         <PackageReference Include="FSharp.Stats" Version="0.5.0" />
         <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+        <PackageReference Include="Plotly.NET" Version="4.2.0" />
         <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.5" />
         <PackageReference Include="Unquote" Version="6.1.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
@@ -41,6 +42,7 @@
         <Compile Include="Day11.fs" />
         <Compile Include="Day12.fs" />
         <Compile Include="Day13.fs" />
+        <Compile Include="Day14.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

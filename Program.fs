@@ -15,7 +15,8 @@ let days =
       Day10.run
       Day11.run
       Day12.run
-      Day13.run ]
+      Day13.run
+      Day14.run ]
     |> List.mapi (fun i run -> fun () -> run $"inputs/day%02u{i + 1}.txt")
 let runAll () =
     let tasks =
