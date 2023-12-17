@@ -11,21 +11,19 @@ let part1 str = parse str |> Seq.map hash |> Seq.sum
 type LensBoxes() =
     let lensBoxes = Array.create 256 List<(string * int)>.Empty
 
-    let mapAt mapper label =
+    let mapAt label mapper =
         let boxId = hash label
         lensBoxes[boxId] <- mapper lensBoxes[boxId]
 
     member x.removeAt label =
-        label
-        |> mapAt (fun list ->
+        mapAt label (fun list ->
             list
             |> List.tryFindIndex (fst >> (=) label)
             |> Option.map (fun index -> list |> List.removeAt index)
             |> Option.defaultValue list)
 
     member x.upsertAt label focalLength =
-        label
-        |> mapAt (fun list ->
+        mapAt label (fun list ->
             list
             |> List.tryFindIndex (fst >> (=) label)
             |> Option.map (fun index -> list |> List.updateAt index (label, focalLength))
@@ -35,7 +33,7 @@ type LensBoxes() =
         lensBoxes
         |> Array.mapi (fun boxId lenses ->
             lenses
-            |> Seq.mapi (fun lensSlot  (_, focalLength) -> (boxId + 1) * (lensSlot + 1) * focalLength)
+            |> Seq.mapi (fun lensSlot (_, focalLength) -> (boxId + 1) * (lensSlot + 1) * focalLength)
             |> Seq.sum)
         |> Seq.sum
 
