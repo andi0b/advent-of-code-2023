@@ -7,25 +7,15 @@ let hash (str: string) =
 
 let part1 str = parse str |> Seq.map hash |> Seq.sum
 
-type Operation =
-    | Remove of label: string
-    | Add of label: string * focalLength: int
 
-    static member parse =
-        function
-        | Regex @"([a-z]+)=(\d+)" [ label; focalLength ] -> Add(label, int focalLength)
-        | Regex @"([a-z]+)-" [ label ] -> Remove label
-        | _ -> failwith ""
-
-let part2 str =
-
-    let lensBoxes = Array.create 256 []
+type LensBoxes() =
+    let lensBoxes = Array.create 256 List<(string * int)>.Empty
 
     let mapAt mapper label =
         let boxId = hash label
         lensBoxes[boxId] <- mapper lensBoxes[boxId]
 
-    let removeAt label =
+    member x.removeAt label =
         label
         |> mapAt (fun list ->
             list
@@ -33,7 +23,7 @@ let part2 str =
             |> Option.map (fun index -> list |> List.removeAt index)
             |> Option.defaultValue list)
 
-    let upsertAt label focalLength =
+    member x.upsertAt label focalLength =
         label
         |> mapAt (fun list ->
             list
@@ -41,19 +31,25 @@ let part2 str =
             |> Option.map (fun index -> list |> List.updateAt index (label, focalLength))
             |> Option.defaultValue (list @ [ (label, focalLength) ]))
 
+    member x.score =
+        lensBoxes
+        |> Array.mapi (fun boxId lenses ->
+            lenses
+            |> Seq.mapi (fun lensSlot  (_, focalLength) -> (boxId + 1) * (lensSlot + 1) * focalLength)
+            |> Seq.sum)
+        |> Seq.sum
+
+let part2 str =
+    let lensBoxes = LensBoxes()
+
     str
     |> parse
-    |> Array.map Operation.parse
     |> Seq.iter (function
-        | Remove label -> removeAt label
-        | Add(label, focalLength) -> upsertAt label focalLength)
+        | Regex @"([a-z]+)=(\d+)" [ label; focalLength ] -> lensBoxes.upsertAt label (int focalLength)
+        | Regex @"([a-z]+)-" [ label ] -> lensBoxes.removeAt label
+        | _ -> failwith "unknown operation")
 
-    lensBoxes
-    |> Array.mapi (fun boxId lenses ->
-        lenses
-        |> Seq.mapi (fun lensSlot (_, focalLength) -> (boxId + 1) * (lensSlot + 1) * focalLength)
-        |> Seq.sum)
-    |> Seq.sum
+    lensBoxes.score
 
 let run = runReadAllText part1 part2
 
@@ -68,9 +64,3 @@ module Tests =
 
     [<Fact>]
     let ``part 2 example`` () = part2 example =! 145
-
-    [<Fact>]
-    let ``parse ops`` () =
-        test <@ Operation.parse "rn=1" = Add("rn", 1) @>
-        test <@ Operation.parse "ggnd=7" = Add("ggnd", 7) @>
-        test <@ Operation.parse "aaab-" = Remove "aaab" @>
